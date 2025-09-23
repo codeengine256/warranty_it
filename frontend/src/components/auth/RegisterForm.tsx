@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { RegisterRequest } from '@/types';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { validatePassword } from '@/lib/utils';
@@ -94,7 +93,6 @@ const RegisterForm: React.FC = () => {
           <div className="space-y-4">
             <Input
               label="Full name"
-              name="name"
               type="text"
               placeholder="Enter your full name"
               required
@@ -104,7 +102,6 @@ const RegisterForm: React.FC = () => {
 
             <Input
               label="Email address"
-              name="email"
               type="email"
               placeholder="Enter your email"
               required
@@ -114,7 +111,6 @@ const RegisterForm: React.FC = () => {
 
             <Input
               label="Password"
-              name="password"
               type="password"
               placeholder="Create a password"
               required
@@ -124,7 +120,6 @@ const RegisterForm: React.FC = () => {
 
             <Input
               label="Confirm password"
-              name="confirmPassword"
               type="password"
               placeholder="Confirm your password"
               required

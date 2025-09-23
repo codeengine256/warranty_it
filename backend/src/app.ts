@@ -32,19 +32,37 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// Rate limiting
-const limiter = rateLimit({
+// Rate limiting - more lenient for development
+const generalLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // limit each IP to 100 requests per windowMs
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '1000'), // Increased to 1000 requests per windowMs
   message: {
     success: false,
     message: 'Too many requests from this IP, please try again later.',
   },
   standardHeaders: true,
   legacyHeaders: false,
+  // Skip rate limiting for health check and API docs
+  skip: (req) => {
+    return req.path === '/health' || req.path.startsWith('/api-docs');
+  },
 });
 
-app.use(limiter);
+// More lenient rate limiting for stats endpoint (called frequently)
+const statsLimiter = rateLimit({
+  windowMs: 60000, // 1 minute
+  max: 60, // 60 requests per minute for stats
+  message: {
+    success: false,
+    message: 'Too many requests to stats endpoint, please try again later.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply different rate limits to different routes
+app.use('/api/products/stats', statsLimiter);
+app.use('/api', generalLimiter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));

@@ -65,7 +65,8 @@ export const createProductValidation = [
 
 export const updateProductValidation = [
   param('id')
-    .isUUID()
+    .isString()
+    .isLength({ min: 1 })
     .withMessage('Invalid product ID'),
 
   body('name')
@@ -138,7 +139,8 @@ export const updateProductValidation = [
 
 export const getProductValidation = [
   param('id')
-    .isUUID()
+    .isString()
+    .isLength({ min: 1 })
     .withMessage('Invalid product ID'),
 ];
 

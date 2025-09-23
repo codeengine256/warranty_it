@@ -19,7 +19,7 @@ export interface Product {
   endDate: string;
   description?: string;
   serialNumber?: string;
-  purchasePrice?: number;
+  purchasePrice?: number | string; // Can be number or string from API
   status: ProductStatus;
   createdAt: string;
   updatedAt: string;

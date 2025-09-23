@@ -4,10 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { LoginRequest } from '@/types';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { validateEmail } from '@/lib/utils';
 
 const loginSchema = z.object({
   email: z
@@ -28,28 +26,19 @@ const LoginForm: React.FC = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid, isDirty, touchedFields },
-    watch,
+    formState: { errors},
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     mode: 'onChange', // Validate on change
   });
 
-  // Debug: Watch form values
-  const watchedValues = watch();
-  console.log('Form values:', watchedValues);
-  console.log('Form errors:', errors);
-  console.log('Form isValid:', isValid);
 
   const onSubmit = async (data: LoginFormData) => {
-    console.log('✅ onSubmit called with data:', data);
     clearError();
     try {
       const result = await login(data);
       if (result.type.endsWith('/fulfilled')) {
         navigate('/dashboard');
-      } else {
-        console.log('❌ Login failed:', result.payload);
       }
     } catch (error) {
       console.error('❌ Login error:', error);

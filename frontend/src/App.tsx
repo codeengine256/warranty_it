@@ -8,6 +8,7 @@ import Register from '@/pages/Register';
 import Dashboard from '@/pages/Dashboard';
 import Products from '@/pages/Products';
 import ProductForm from '@/pages/ProductForm';
+import ProductDetails from '@/pages/ProductDetails';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="products" element={<Products />} />
               <Route path="products/new" element={<ProductForm />} />
+              <Route path="products/:id" element={<ProductDetails />} />
               <Route path="products/:id/edit" element={<ProductForm />} />
             </Route>
             

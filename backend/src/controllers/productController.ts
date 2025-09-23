@@ -18,9 +18,19 @@ export class ProductController {
       };
 
       res.status(201).json(response);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Create product controller error:', error);
-      throw error;
+      
+      const statusCode = error.statusCode || 500;
+      const message = error.message || 'Internal server error';
+      
+      const response: ApiResponse = {
+        success: false,
+        message,
+        error: error.message,
+      };
+
+      res.status(statusCode).json(response);
     }
   }
 
@@ -43,9 +53,19 @@ export class ProductController {
       };
 
       res.json(response);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Get products controller error:', error);
-      throw error;
+      
+      const statusCode = error.statusCode || 500;
+      const message = error.message || 'Internal server error';
+      
+      const response: ApiResponse = {
+        success: false,
+        message,
+        error: error.message,
+      };
+
+      res.status(statusCode).json(response);
     }
   }
 
@@ -63,9 +83,19 @@ export class ProductController {
       };
 
       res.json(response);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Get product by ID controller error:', error);
-      throw error;
+      
+      const statusCode = error.statusCode || 500;
+      const message = error.message || 'Internal server error';
+      
+      const response: ApiResponse = {
+        success: false,
+        message,
+        error: error.message,
+      };
+
+      res.status(statusCode).json(response);
     }
   }
 
@@ -84,9 +114,19 @@ export class ProductController {
       };
 
       res.json(response);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Update product controller error:', error);
-      throw error;
+      
+      const statusCode = error.statusCode || 500;
+      const message = error.message || 'Internal server error';
+      
+      const response: ApiResponse = {
+        success: false,
+        message,
+        error: error.message,
+      };
+
+      res.status(statusCode).json(response);
     }
   }
 
@@ -103,9 +143,19 @@ export class ProductController {
       };
 
       res.json(response);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Delete product controller error:', error);
-      throw error;
+      
+      const statusCode = error.statusCode || 500;
+      const message = error.message || 'Internal server error';
+      
+      const response: ApiResponse = {
+        success: false,
+        message,
+        error: error.message,
+      };
+
+      res.status(statusCode).json(response);
     }
   }
 
@@ -121,9 +171,19 @@ export class ProductController {
       };
 
       res.json(response);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Get product stats controller error:', error);
-      throw error;
+      
+      const statusCode = error.statusCode || 500;
+      const message = error.message || 'Internal server error';
+      
+      const response: ApiResponse = {
+        success: false,
+        message,
+        error: error.message,
+      };
+
+      res.status(statusCode).json(response);
     }
   }
 }

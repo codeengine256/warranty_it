@@ -29,6 +29,14 @@ export function calculateEndDate(startDate: string | Date, warrantyPeriod: numbe
   return addMonths(new Date(startDate), warrantyPeriod);
 }
 
+export function calculateDaysRemaining(endDate: string | Date): number {
+  const now = new Date();
+  const expiryDate = new Date(endDate);
+  const diffTime = expiryDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.max(0, diffDays);
+}
+
 export function getStatusColor(status: string): string {
   switch (status) {
     case 'ACTIVE':
@@ -59,12 +67,14 @@ export function getStatusBadgeVariant(status: string): 'success' | 'error' | 'wa
   }
 }
 
-export function formatCurrency(amount: number | undefined): string {
+export function formatCurrency(amount: number | string | undefined): string {
   if (amount === undefined || amount === null) return 'N/A';
+  const numAmount = typeof amount === 'string' ? Number(amount) : amount;
+  if (isNaN(numAmount)) return 'N/A';
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-  }).format(amount);
+  }).format(numAmount);
 }
 
 export function truncateText(text: string, maxLength: number): string {

@@ -16,9 +16,19 @@ export class AuthController {
       };
 
       res.status(201).json(response);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Register controller error:', error);
-      throw error;
+      
+      const statusCode = error.statusCode || 500;
+      const message = error.message || 'Internal server error';
+      
+      const response: ApiResponse = {
+        success: false,
+        message,
+        error: error.message,
+      };
+
+      res.status(statusCode).json(response);
     }
   }
 
@@ -34,9 +44,19 @@ export class AuthController {
       };
 
       res.json(response);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Login controller error:', error);
-      throw error;
+      
+      const statusCode = error.statusCode || 500;
+      const message = error.message || 'Internal server error';
+      
+      const response: ApiResponse = {
+        success: false,
+        message,
+        error: error.message,
+      };
+
+      res.status(statusCode).json(response);
     }
   }
 

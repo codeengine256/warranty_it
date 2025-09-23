@@ -21,7 +21,7 @@ const Dashboard: React.FC = () => {
     }
 
     // Fetch initial data
-    fetchProducts({ limit: 6 });
+    fetchProducts({ limit: 12 });
     fetchProductStats();
   }, [isAuthenticated, navigate, fetchProducts, fetchProductStats]);
 
