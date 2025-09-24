@@ -30,34 +30,44 @@ const Products: React.FC = () => {
       return;
     }
 
-    fetchProducts({ page: currentPage, limit: 12 });
-  }, [isAuthenticated, navigate, fetchProducts, currentPage]);
+    fetchProducts({ 
+      page: currentPage, 
+      limit: 12,
+      search: searchTerm,
+      status: statusFilter || undefined,
+    });
+  }, [isAuthenticated, navigate, fetchProducts, currentPage, searchTerm, statusFilter]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Implement search functionality
     fetchProducts({ 
       page: 1, 
       limit: 12,
-      // Add search parameters when backend supports it
+      search: searchTerm,
+      status: statusFilter || undefined,
     });
     setCurrentPage(1);
   };
 
   const handleStatusFilter = (status: string) => {
     setStatusFilter(status);
-    // Implement status filtering
     fetchProducts({ 
       page: 1, 
       limit: 12,
-      // Add status filter when backend supports it
+      search: searchTerm,
+      status: status || undefined,
     });
     setCurrentPage(1);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    fetchProducts({ page, limit: 12 });
+    fetchProducts({ 
+      page, 
+      limit: 12,
+      search: searchTerm,
+      status: statusFilter || undefined,
+    });
   };
 
   const handleAddProduct = () => {
@@ -84,7 +94,12 @@ const Products: React.FC = () => {
     try {
       await deleteProduct(productToDelete.id);
       toast.success('Product deleted successfully');
-      fetchProducts({ page: currentPage, limit: 12 });
+      fetchProducts({ 
+        page: currentPage, 
+        limit: 12,
+        search: searchTerm,
+        status: statusFilter || undefined,
+      });
     } catch (error) {
       toast.error('Failed to delete product');
     } finally {

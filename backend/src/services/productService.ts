@@ -67,13 +67,39 @@ export class ProductService {
         limit = 10,
         sortBy = 'createdAt',
         sortOrder = 'desc',
+        status,
+        search,
       } = pagination;
 
       const skip = (page - 1) * limit;
 
+      // Build where clause
+      const whereClause: any = { userId };
+      
+      if (status) {
+        if (status === 'EXPIRED') {
+          // For expired, we need to check if endDate is in the past
+          whereClause.endDate = { lt: new Date() };
+        } else if (status === 'ACTIVE') {
+          // For active, check if endDate is in the future
+          whereClause.endDate = { gte: new Date() };
+        } else {
+          whereClause.status = status;
+        }
+      }
+
+      if (search) {
+        whereClause.OR = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { brand: { contains: search, mode: 'insensitive' } },
+          { type: { contains: search, mode: 'insensitive' } },
+          { serialNumber: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
       const [products, total] = await Promise.all([
         prisma.product.findMany({
-          where: { userId },
+          where: whereClause,
           include: {
             user: {
               select: {
@@ -87,7 +113,7 @@ export class ProductService {
           skip,
           take: limit,
         }),
-        prisma.product.count({ where: { userId } }),
+        prisma.product.count({ where: whereClause }),
       ]);
 
       // Update product status based on current date

@@ -42,6 +42,8 @@ export class ProductController {
         limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
         sortBy: req.query.sortBy as string,
         sortOrder: req.query.sortOrder as 'asc' | 'desc',
+        status: req.query.status as string,
+        search: req.query.search as string,
       };
 
       const result = await ProductService.getProducts(userId, pagination);

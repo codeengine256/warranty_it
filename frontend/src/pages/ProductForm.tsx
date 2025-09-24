@@ -15,7 +15,8 @@ const ProductFormPage: React.FC = () => {
     loading, 
     fetchProduct, 
     createProduct, 
-    updateProduct 
+    updateProduct,
+    clearCurrentProduct
   } = useProducts();
 
   const isEdit = !!id;
@@ -28,8 +29,11 @@ const ProductFormPage: React.FC = () => {
 
     if (isEdit && id) {
       fetchProduct(id);
+    } else {
+      // Clear current product when adding new product
+      clearCurrentProduct();
     }
-  }, [isAuthenticated, navigate, isEdit, id, fetchProduct]);
+  }, [isAuthenticated, navigate, isEdit, id, fetchProduct, clearCurrentProduct]);
 
   const handleSubmit = async (data: CreateProductRequest | UpdateProductRequest) => {
     try {

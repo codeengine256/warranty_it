@@ -83,6 +83,8 @@ export interface PaginationParams {
   limit?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  status?: string;
+  search?: string;
 }
 
 export interface PaginatedResponse<T> {

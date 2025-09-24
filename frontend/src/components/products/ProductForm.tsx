@@ -72,6 +72,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -89,6 +90,33 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const warrantyPeriod = watch('warrantyPeriod');
   const startDate = watch('startDate');
+
+  // Reset form when product prop changes
+  useEffect(() => {
+    if (product) {
+      reset({
+        name: product.name,
+        brand: product.brand,
+        type: product.type,
+        warrantyPeriod: product.warrantyPeriod,
+        startDate: product.startDate.split('T')[0],
+        description: product.description || '',
+        serialNumber: product.serialNumber || '',
+        purchasePrice: product.purchasePrice || undefined,
+      });
+    } else {
+      reset({
+        name: '',
+        brand: '',
+        type: '',
+        warrantyPeriod: 12,
+        startDate: new Date().toISOString().split('T')[0],
+        description: '',
+        serialNumber: '',
+        purchasePrice: undefined,
+      });
+    }
+  }, [product, reset]);
 
   // Calculate and display end date
   useEffect(() => {
