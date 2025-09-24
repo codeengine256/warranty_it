@@ -2,6 +2,10 @@
 
 A full-stack web application for managing product warranties with a modern, responsive UI and robust backend API.
 
+## 🎥 Demo
+
+Watch the application in action: [WarrantyIt Demo Video](https://www.loom.com/share/39eb168f7b7b45f5925933a5a651ae36?sid=8bbd662a-5226-4937-8634-693a89e83782)
+
 ## 🚀 Features
 
 ### Core Functionality
