@@ -1,18 +1,22 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProducts } from '@/hooks/useProducts';
 import ProductStats from '@/components/products/ProductStats';
 import ProductCard from '@/components/products/ProductCard';
 import Button from '@/components/ui/Button';
-import { Plus, Package, AlertTriangle, CheckCircle } from 'lucide-react';
+import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
+import { Plus, Package, AlertTriangle } from 'lucide-react';
 import { formatDate, isProductExpired, isProductExpiringSoon } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
-  const { products, stats, loading, fetchProducts, fetchProductStats } = useProducts();
+  const { products, stats, loading, fetchProducts, fetchProductStats, deleteProduct } = useProducts();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<any>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -43,17 +47,32 @@ const Dashboard: React.FC = () => {
     navigate(`/products/${product.id}/edit`);
   };
 
-  const handleDeleteProduct = async (product: any) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        await useProducts().deleteProduct(product.id);
-        toast.success('Product deleted successfully');
-        fetchProducts({ limit: 6 });
-        fetchProductStats();
-      } catch (error) {
-        toast.error('Failed to delete product');
-      }
+  const handleDeleteProduct = (product: any) => {
+    setProductToDelete(product);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!productToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteProduct(productToDelete.id);
+      toast.success('Product deleted successfully');
+      fetchProducts({ limit: 6 });
+      fetchProductStats();
+    } catch (error) {
+      toast.error('Failed to delete product');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+      setProductToDelete(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteDialog(false);
+    setProductToDelete(null);
   };
 
   if (loading) {
@@ -169,6 +188,19 @@ const Dashboard: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${productToDelete?.name}"? This action cannot be undone and will permanently remove the product from your warranty list.`}
+        confirmText="Delete Product"
+        cancelText="Cancel"
+        variant="danger"
+        loading={isDeleting}
+      />
     </div>
   );
 };

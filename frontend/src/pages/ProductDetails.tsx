@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProducts } from '@/hooks/useProducts';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
+import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import { 
   ArrowLeft, 
   Edit, 
@@ -23,6 +24,8 @@ const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentProduct, loading, error, fetchProduct, deleteProduct } = useProducts();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -34,18 +37,28 @@ const ProductDetails: React.FC = () => {
     navigate(`/products/${id}/edit`);
   };
 
-  const handleDelete = async () => {
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
     if (!currentProduct) return;
     
-    if (window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
-      try {
-        await deleteProduct(currentProduct.id);
-        toast.success('Product deleted successfully');
-        navigate('/products');
-      } catch (error) {
-        toast.error('Failed to delete product');
-      }
+    setIsDeleting(true);
+    try {
+      await deleteProduct(currentProduct.id);
+      toast.success('Product deleted successfully');
+      navigate('/products');
+    } catch (error) {
+      toast.error('Failed to delete product');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteDialog(false);
   };
 
   const handleBack = () => {
@@ -179,8 +192,8 @@ const ProductDetails: React.FC = () => {
               </Button>
               <Button
                 variant="outline"
-                onClick={handleDelete}
-                className="flex items-center text-error-600 hover:text-error-700 hover:border-error-300"
+                onClick={handleDeleteClick}
+                className="flex items-center text-white bg-error-600 hover:bg-error-700 border-error-600 hover:border-error-700 focus:ring-error-500"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
@@ -316,6 +329,19 @@ const ProductDetails: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${currentProduct?.name}"? This action cannot be undone and will permanently remove the product from your warranty list.`}
+        confirmText="Delete Product"
+        cancelText="Cancel"
+        variant="danger"
+        loading={isDeleting}
+      />
     </div>
   );
 };

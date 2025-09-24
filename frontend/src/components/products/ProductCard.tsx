@@ -111,6 +111,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => onDelete(product)}
+              className="text-error-600 hover:text-error-700 hover:bg-error-50"
             >
               <Trash2 className="h-4 w-4" />
             </Button>

@@ -6,6 +6,7 @@ import ProductCard from '@/components/products/ProductCard';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
+import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import { Plus, Search, Filter, Grid, List } from 'lucide-react';
 import { Product } from '@/types';
 import toast from 'react-hot-toast';
@@ -19,6 +20,9 @@ const Products: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -68,16 +72,31 @@ const Products: React.FC = () => {
     navigate(`/products/${product.id}/edit`);
   };
 
-  const handleDeleteProduct = async (product: Product) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        await deleteProduct(product.id);
-        toast.success('Product deleted successfully');
-        fetchProducts({ page: currentPage, limit: 12 });
-      } catch (error) {
-        toast.error('Failed to delete product');
-      }
+  const handleDeleteProduct = (product: Product) => {
+    setProductToDelete(product);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!productToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteProduct(productToDelete.id);
+      toast.success('Product deleted successfully');
+      fetchProducts({ page: currentPage, limit: 12 });
+    } catch (error) {
+      toast.error('Failed to delete product');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+      setProductToDelete(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteDialog(false);
+    setProductToDelete(null);
   };
 
   const statusOptions = [
@@ -266,6 +285,19 @@ const Products: React.FC = () => {
           )}
         </>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showDeleteDialog}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${productToDelete?.name}"? This action cannot be undone and will permanently remove the product from your warranty list.`}
+        confirmText="Delete Product"
+        cancelText="Cancel"
+        variant="danger"
+        loading={isDeleting}
+      />
     </div>
   );
 };
