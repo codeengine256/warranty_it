@@ -15,7 +15,7 @@ A full-stack web application for managing product warranties with a modern, resp
 ### Technical Features
 - **TypeScript**: Full type safety across frontend and backend
 - **Modern UI/UX**: Beautiful, accessible interface with Tailwind CSS
-- **State Management**: Redux Toolkit for predictable state management
+- **State Management**: Zustand for predictable state management
 - **Real-time Updates**: Instant UI updates with optimistic updates
 - **Comprehensive Testing**: Unit and integration tests for reliability
 - **Production Ready**: Logging, error handling, and security best practices

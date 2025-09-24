@@ -1,0 +1,75 @@
+name: Dependencies
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  dependency-check:
+    name: Dependency Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Check backend dependencies
+        working-directory: ./backend
+        run: |
+          npm ci
+          npm audit --audit-level moderate
+          npm outdated || true
+
+      - name: Check frontend dependencies
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm audit --audit-level moderate
+          npm outdated || true
+
+      - name: Check for security vulnerabilities
+        run: |
+          echo "Checking for known security vulnerabilities..."
+          cd backend && npm audit --audit-level high --json > ../backend-audit.json || true
+          cd ../frontend && npm audit --audit-level high --json > ../frontend-audit.json || true
+          
+          # Check if there are any high-severity vulnerabilities
+          if [ -s backend-audit.json ] && [ "$(jq '.vulnerabilities | length' backend-audit.json)" -gt 0 ]; then
+            echo "High-severity vulnerabilities found in backend dependencies"
+            cat backend-audit.json
+            exit 1
+          fi
+          
+          if [ -s frontend-audit.json ] && [ "$(jq '.vulnerabilities | length' frontend-audit.json)" -gt 0 ]; then
+            echo "High-severity vulnerabilities found in frontend dependencies"
+            cat frontend-audit.json
+            exit 1
+          fi
+          
+          echo "No high-severity vulnerabilities found"
+
+      - name: Generate dependency report
+        run: |
+          echo "# Dependency Report" > dependency-report.md
+          echo "Generated on: $(date)" >> dependency-report.md
+          echo "" >> dependency-report.md
+          
+          echo "## Backend Dependencies" >> dependency-report.md
+          echo "\`\`\`" >> dependency-report.md
+          cd backend && npm list --depth=0 >> ../dependency-report.md
+          echo "\`\`\`" >> dependency-report.md
+          echo "" >> dependency-report.md
+          
+          echo "## Frontend Dependencies" >> dependency-report.md
+          echo "\`\`\`" >> dependency-report.md
+          cd ../frontend && npm list --depth=0 >> ../dependency-report.md
+          echo "\`\`\`" >> dependency-report.md
+          
+          cat dependency-report.md

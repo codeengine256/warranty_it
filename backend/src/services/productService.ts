@@ -2,7 +2,7 @@ import prisma from '@/config/database';
 import { CreateProductRequest, UpdateProductRequest, ProductWithUser, PaginationParams, PaginatedResponse } from '@/types';
 import { AppError } from '@/middleware/errorHandler';
 import logger from '@/config/logger';
-import { ProductStatus } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 export class ProductService {
   static async createProduct(userId: string, data: CreateProductRequest) {
@@ -34,7 +34,7 @@ export class ProductService {
           description: data.description,
           serialNumber: data.serialNumber,
           purchasePrice: data.purchasePrice ? Number(data.purchasePrice) : null,
-          status: ProductStatus.ACTIVE,
+          status: 'ACTIVE',
           userId,
         },
         include: {
@@ -90,10 +90,26 @@ export class ProductService {
         prisma.product.count({ where: { userId } }),
       ]);
 
+      // Update product status based on current date
+      const now = new Date();
+      const updatedProducts = products.map((product: any) => {
+        const isExpired = product.endDate < now;
+        
+        // Only update status if it's currently ACTIVE and has expired
+        if (product.status === 'ACTIVE' && isExpired) {
+          return {
+            ...product,
+            status: 'EXPIRED',
+          };
+        }
+        
+        return product;
+      });
+
       const totalPages = Math.ceil(total / limit);
 
       return {
-        data: products,
+        data: updatedProducts,
         pagination: {
           page,
           limit,
@@ -129,6 +145,18 @@ export class ProductService {
 
       if (!product) {
         throw new AppError('Product not found', 404);
+      }
+
+      // Update product status based on current date
+      const now = new Date();
+      const isExpired = product.endDate < now;
+      
+      // Only update status if it's currently ACTIVE and has expired
+      if (product.status === 'ACTIVE' && isExpired) {
+        return {
+          ...product,
+          status: 'EXPIRED',
+        };
       }
 
       return product;
@@ -229,41 +257,54 @@ export class ProductService {
 
   static async getProductStats(userId: string) {
     try {
-      const [
-        totalProducts,
-        activeProducts,
-        expiredProducts,
-        claimedProducts,
-        cancelledProducts,
-      ] = await Promise.all([
-        prisma.product.count({ where: { userId } }),
-        prisma.product.count({ where: { userId, status: ProductStatus.ACTIVE } }),
-        prisma.product.count({ where: { userId, status: ProductStatus.EXPIRED } }),
-        prisma.product.count({ where: { userId, status: ProductStatus.CLAIMED } }),
-        prisma.product.count({ where: { userId, status: ProductStatus.CANCELLED } }),
-      ]);
-
-      // Get products expiring in the next 30 days
-      const thirtyDaysFromNow = new Date();
-      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-
-      const expiringSoon = await prisma.product.count({
-        where: {
-          userId,
-          status: ProductStatus.ACTIVE,
-          endDate: {
-            lte: thirtyDaysFromNow,
-            gte: new Date(),
-          },
+      // Get all products for the user
+      const allProducts = await prisma.product.findMany({
+        where: { userId },
+        select: {
+          id: true,
+          status: true,
+          endDate: true,
         },
       });
 
+      const now = new Date();
+      const thirtyDaysFromNow = new Date();
+      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+      // Calculate actual status based on current date
+      let active = 0;
+      let expired = 0;
+      let claimed = 0;
+      let cancelled = 0;
+      let expiringSoon = 0;
+
+      allProducts.forEach((product: any) => {
+        const isExpired = product.endDate < now;
+        
+        if (product.status === 'CLAIMED') {
+          claimed++;
+        } else if (product.status === 'CANCELLED') {
+          cancelled++;
+        } else if (isExpired) {
+          // Product has expired based on endDate, regardless of stored status
+          expired++;
+        } else {
+          // Product is active (not expired)
+          active++;
+          
+          // Check if expiring soon (within 30 days)
+          if (product.endDate <= thirtyDaysFromNow) {
+            expiringSoon++;
+          }
+        }
+      });
+
       return {
-        total: totalProducts,
-        active: activeProducts,
-        expired: expiredProducts,
-        claimed: claimedProducts,
-        cancelled: cancelledProducts,
+        total: allProducts.length,
+        active,
+        expired,
+        claimed,
+        cancelled,
         expiringSoon,
       };
     } catch (error) {

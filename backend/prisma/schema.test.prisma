@@ -1,0 +1,49 @@
+// This is your Prisma schema file for testing,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./test.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+
+  @@map("users")
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  brand         String
+  type          String
+  warrantyPeriod Int     // in months
+  startDate     DateTime
+  endDate       DateTime
+  description   String?
+  serialNumber  String? @unique
+  purchasePrice Float?
+  status        String @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+  @@map("products")
+}

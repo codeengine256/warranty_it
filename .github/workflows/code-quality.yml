@@ -1,0 +1,60 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Backend ESLint
+        working-directory: ./backend
+        run: npm run lint
+
+      - name: Frontend ESLint
+        working-directory: ./frontend
+        run: npm run lint
+
+      - name: Frontend Type Check
+        working-directory: ./frontend
+        run: npm run type-check
+
+      - name: Check for TODO comments
+        run: |
+          echo "Checking for TODO comments in code..."
+          if grep -r "TODO\|FIXME\|HACK" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=build .; then
+            echo "Found TODO/FIXME/HACK comments in code. Please address them before merging."
+            exit 1
+          fi
+          echo "No TODO/FIXME/HACK comments found."
+
+      - name: Check for console.log statements
+        run: |
+          echo "Checking for console.log statements in production code..."
+          if grep -r "console\.log\|console\.warn\|console\.error" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=build --exclude="*.test.*" --exclude="*.spec.*" .; then
+            echo "Found console.log statements in production code. Please remove them before merging."
+            exit 1
+          fi
+          echo "No console.log statements found in production code."

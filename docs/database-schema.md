@@ -166,15 +166,4 @@ Run seeding with: `npx prisma db seed`
 3. **Access Control**: Row-level security through user ownership
 4. **SQL Injection**: Prevented through Prisma ORM parameterized queries
 
-## Backup and Recovery
 
-- Regular automated backups recommended
-- Point-in-time recovery capabilities
-- Test restore procedures regularly
-
-## Monitoring
-
-- Monitor query performance
-- Track slow queries
-- Monitor index usage
-- Set up alerts for failed queries
